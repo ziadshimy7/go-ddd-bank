@@ -35,25 +35,30 @@ func main() {
 	userRepo := repo.NewUserRepository(dbConn)
 	accountRepo := repo.NewAccountRepository(dbConn)
 	userAccountRepo := repo.NewAccountUserViewRepository(dbConn)
+	otpRepo := repo.NewOTPRepository(dbConn)
 
 	//services =>> application layer, it orchestrates different domain and repositories actions together
 	userService := services.NewUserService(userRepo)
 	accountService := services.NewAccountService(accountRepo)
 	userAccountService := services.NewUserAccountService(userAccountRepo)
+	otpService := services.NewOTPService(otpRepo)
 
 	//handlers =>> http handlers
 	userHandler := api.NewUserHandler(userService)
 	accountHandler := api.NewAccountHandler(accountService)
 	userAccountHandler := api.NewUserAccountHandler(userAccountService)
+	otpHandler := api.NewOTPHandler(otpService)
 
 	// routes
 	userRoutes := infrastructure.InitiateUserRoutes(userHandler)
 	accountRoutes := infrastructure.InitiateAccountRoutes(accountHandler)
 	userAccountRoutes := infrastructure.InitiateUserAccountRoutes(userAccountHandler)
+	otpRoutes := infrastructure.InitiateOTPRoutes(otpHandler)
 
 	userRoutes.RegisterRoutes(r)
 	accountRoutes.RegisterRoutes(r)
 	userAccountRoutes.RegisterRoutes(r)
+	otpRoutes.RegisterRoutes(r)
 
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true

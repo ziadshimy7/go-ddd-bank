@@ -25,7 +25,7 @@ var (
 	queryGetUserByID    = "SELECT id, first_name, last_name, email FROM users WHERE id = ? "
 )
 
-func NewUserRepository(db *db.Adapter) *UserRepo {
+func NewUserRepository(db *db.DbConnection) *UserRepo {
 	return &UserRepo{Db: db.DB}
 }
 

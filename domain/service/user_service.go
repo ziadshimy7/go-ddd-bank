@@ -42,9 +42,7 @@ func (us *UserService) GetUserByEmail(user *domain.User) (*domain.User, *errors.
 		return nil, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password)); err != nil {
-		return nil, errors.NewBadRequestError("Failed to decrypt password")
-	}
+	result.VerifyPassword(user.Password)
 
 	resultWp := &domain.User{
 		ID:        result.ID,

@@ -18,5 +18,4 @@ func (h *UserRoutes) RegisterRoutes(r *gin.Engine) {
 	r.POST("/api/auth/login", h.uhandler.Login)
 	r.GET("/api/auth/user", h.uhandler.GetUser)
 	r.GET("/api/auth/logout", h.uhandler.Logout)
-	r.POST("/api/auth/otp", h.uhandler.GetOTP)
 }

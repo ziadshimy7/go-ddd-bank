@@ -14,8 +14,8 @@ func NewUserAccountService(r repo.UserAccountRepository) *UserAccountService {
 	return &UserAccountService{r: r}
 }
 
-func (uar *UserAccountService) GetUserAccountDetails(userID int64) (*dto.UserAccountDto, *errors.Errors) {
-	userAccountDto, err := uar.r.GetAccountViewByUserID(userID)
+func (uas *UserAccountService) GetUserAccountDetails(userID int64) (*dto.UserAccountDto, *errors.Errors) {
+	userAccountDto, err := uas.r.GetAccountViewByUserID(userID)
 	if err != nil {
 		return nil, err
 	}

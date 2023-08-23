@@ -23,7 +23,7 @@ type UserAccountDtoRepository struct {
 	Db *sql.DB
 }
 
-func NewAccountUserViewRepository(db *db.Adapter) *UserAccountDtoRepository {
+func NewAccountUserViewRepository(db *db.DbConnection) *UserAccountDtoRepository {
 	return &UserAccountDtoRepository{Db: db.DB}
 }
 

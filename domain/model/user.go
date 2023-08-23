@@ -5,6 +5,7 @@ import (
 	"time"
 
 	errors "github.com/go-ddd-bank/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -15,17 +16,18 @@ type User struct {
 	Email     string     `json:"email"`
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
-
-	Otp_enabled  bool `json:"otp_enabled"`
-	Otp_verified bool `json:"otp_verified"`
-
-	Otp_secret   string `json:"otp_secret,omitempty"`
-	Otp_auth_url string `json:"otp_auth_url,omitempty"`
 }
 
-type OTPInput struct {
-	UserId string `json:"user_id"`
-	Token  string `json:"token"`
+func NewUser(args *User) *User {
+	return &User{
+		ID:        args.ID,
+		FirstName: args.FirstName,
+		LastName:  args.LastName,
+		Password:  args.Password,
+		Email:     args.Email,
+		CreatedAt: args.CreatedAt,
+		UpdatedAt: args.UpdatedAt,
+	}
 }
 
 func (user *User) Validate() *errors.Errors {
@@ -42,4 +44,9 @@ func (user *User) Validate() *errors.Errors {
 	}
 
 	return nil
+}
+
+func (u *User) VerifyPassword(userPassword string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(userPassword))
+	return err != nil
 }

@@ -17,11 +17,10 @@ type AccountRepo struct {
 }
 
 var (
-	queryGetAccountByID = `SELECT accounts_id, user_id, account_number, expenses, income, balance
-	 FROM accounts WHERE accounts_id = ?;`
+	queryGetAccountByID = `SELECT * FROM accounts WHERE user_id = ?;`
 )
 
-func NewAccountRepository(db *db.Adapter) *AccountRepo {
+func NewAccountRepository(db *db.DbConnection) *AccountRepo {
 	return &AccountRepo{Db: db.DB}
 }
 
@@ -36,11 +35,11 @@ func (r *AccountRepo) GetAccount(account *domain.Account) (*domain.Account, *err
 	defer stmt.Close()
 
 	result := stmt.QueryRow(account.ID)
-	userAcc := &domain.Account{}
+	acc := &domain.Account{}
 
-	err = result.Scan(&userAcc.ID, &userAcc.UserID,
-		&userAcc.AccountsNumber, &userAcc.Expenses, &userAcc.Income,
-		&userAcc.Balance,
+	err = result.Scan(&acc.ID, &acc.UserID,
+		&acc.AccountsNumber, &acc.Expenses, &acc.Income,
+		&acc.Balance, &acc.CardNumber, &acc.ExpirationDate, &acc.CreatedAt,
 	)
 
 	if err != nil {
@@ -48,5 +47,5 @@ func (r *AccountRepo) GetAccount(account *domain.Account) (*domain.Account, *err
 		return nil, errors.NewInternalServerError("Cannot fetch account details")
 	}
 
-	return userAcc, nil
+	return acc, nil
 }
