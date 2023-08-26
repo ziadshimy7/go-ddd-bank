@@ -47,7 +47,7 @@ func main() {
 	userHandler := api.NewUserHandler(userService)
 	accountHandler := api.NewAccountHandler(accountService)
 	userAccountHandler := api.NewUserAccountHandler(userAccountService)
-	otpHandler := api.NewOTPHandler(otpService)
+	otpHandler := api.NewOTPHandler(otpService, userService)
 
 	// routes
 	userRoutes := infrastructure.InitiateUserRoutes(userHandler)

@@ -21,3 +21,17 @@ func (os *OTPService) UpdateOTP(otp *domain.OTP) *errors.Errors {
 
 	return nil
 }
+
+func (os *OTPService) GetOTPSecret(otp *domain.OTP) *errors.Errors {
+	if err := os.r.GetOTPSecret(otp); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (os *OTPService) EnableUserOTP(otp *domain.OTP) *errors.Errors {
+	if err := os.r.EnableUserOTP(otp); err != nil {
+		return err
+	}
+	return nil
+}

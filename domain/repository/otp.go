@@ -11,7 +11,8 @@ import (
 
 type OTPRepository interface {
 	UpdateOTP(otp *domain.OTP) *errors.Errors
-	VerifyOTP(otp *domain.OTP) *errors.Errors
+	GetOTPSecret(otp *domain.OTP) *errors.Errors
+	EnableUserOTP(otp *domain.OTP) *errors.Errors
 }
 
 type OTPRepo struct {
@@ -24,6 +25,15 @@ var (
 	otp_secret = ?,
 	otp_auth_url = ?
 	WHERE 
+	user_id = ?;`
+	queryGetOTPSecret = `SELECT otp_secret 
+	FROM otp WHERE user_id = ?;`
+
+	queryEnableUserOTP = `UPDATE otp
+	SET
+	otp_verified = ?,
+	otp_enabled = ?
+	WHERE
 	user_id = ?;`
 )
 
@@ -41,15 +51,55 @@ func (r *OTPRepo) UpdateOTP(otp *domain.OTP) *errors.Errors {
 
 	defer stmt.Close()
 
-	_, updateErr := stmt.Exec(otp.Otp_secret, otp.Otp_auth_url, otp.ID)
+	_, updateErr := stmt.Exec(otp.Otp_secret, otp.Otp_auth_url, otp.User_id)
 
 	if updateErr != nil {
 		fmt.Println(updateErr.Error())
 		return errors.NewInternalServerError("Error executing the update: " + updateErr.Error())
 	}
+
 	return nil
 }
 
-func (r *OTPRepo) VerifyOTP(otp *domain.OTP) *errors.Errors {
-	return errors.NewInternalServerError("cosomk")
+func (r *OTPRepo) GetOTPSecret(otp *domain.OTP) *errors.Errors {
+
+	stmt, err := r.Db.Prepare(queryGetOTPSecret)
+
+	if err != nil {
+		fmt.Println(err)
+		return errors.NewInternalServerError("User not found")
+	}
+
+	defer stmt.Close()
+
+	result := stmt.QueryRow(otp.User_id)
+
+	err = result.Scan(&otp.Otp_secret)
+
+	if err != nil {
+		fmt.Println(err)
+		return errors.NewInternalServerError("Cannot fetch account details")
+	}
+
+	return nil
+}
+
+func (r *OTPRepo) EnableUserOTP(otp *domain.OTP) *errors.Errors {
+	stmt, err := r.Db.Prepare(queryEnableUserOTP)
+
+	if err != nil {
+		fmt.Println(err)
+		return errors.NewInternalServerError("User not found")
+	}
+
+	defer stmt.Close()
+
+	_, updateErr := stmt.Exec(otp.Otp_verified, otp.Otp_enabled, otp.User_id)
+
+	if updateErr != nil {
+		fmt.Println(updateErr.Error())
+		return errors.NewInternalServerError("Error executing the update: " + updateErr.Error())
+	}
+
+	return nil
 }

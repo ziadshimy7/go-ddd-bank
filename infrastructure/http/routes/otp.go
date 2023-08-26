@@ -15,5 +15,5 @@ func InitiateOTPRoutes(otphandler *api.OTPHandler) *OTPRoutes {
 
 func (h *OTPRoutes) RegisterRoutes(r *gin.Engine) {
 	r.POST("/api/auth/otp", h.otphandler.GetOTP)
-	// r.POST("/api/auth/otp/verify", h.otphandler.VerifyOTP)
+	r.POST("/api/auth/otp/verify", h.otphandler.VerifyOTP)
 }

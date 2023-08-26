@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,15 +14,16 @@ import (
 
 type OTPHandler struct {
 	os *services.OTPService
+	us *services.UserService
 }
 
-func NewOTPHandler(os *services.OTPService) *OTPHandler {
-	return &OTPHandler{os: os}
+func NewOTPHandler(os *services.OTPService, us *services.UserService) *OTPHandler {
+	return &OTPHandler{os: os, us: us}
 }
 
 func (otphandler *OTPHandler) GetOTP(c *gin.Context) {
 	otp := &domain.OTP{}
-	user := &domain.User{}
+	user := new(domain.User)
 
 	cookie, _ := c.Cookie("jwt")
 
@@ -40,12 +40,13 @@ func (otphandler *OTPHandler) GetOTP(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, restErr)
 		return
 	}
-	fmt.Println(user.Email)
+	issuerInt, _ := strconv.ParseInt(issuer, 10, 64)
 
 	key, err := totp.Generate(totp.GenerateOpts{
-		Issuer:      issuer,
+		Issuer:      "reenbank.com",
 		AccountName: user.Email,
 		SecretSize:  15,
+		Period:      60,
 	})
 
 	if err != nil {
@@ -53,8 +54,6 @@ func (otphandler *OTPHandler) GetOTP(c *gin.Context) {
 		c.JSON(err.Status, err)
 		return
 	}
-
-	issuerInt, _ := strconv.ParseInt(issuer, 10, 64)
 
 	otp.User_id = issuerInt
 	otp.Otp_secret = key.Secret()
@@ -75,54 +74,71 @@ func (otphandler *OTPHandler) GetOTP(c *gin.Context) {
 	c.JSON(http.StatusOK, otpResponse)
 }
 
-// func (otphandler *OTPHandler) VerifyOTP(c *gin.Context) {
-// 	var token *domain.OTPTokenRequest
-// 	var user *domain.User
+func (otphandler *OTPHandler) VerifyOTP(c *gin.Context) {
+	var token *domain.OTPTokenRequest
+	otp := domain.OTP{}
+	user := new(domain.User)
 
-// 	cookie, _ := c.Cookie("jwt")
+	cookie, _ := c.Cookie("jwt")
 
-// 	_, issuerErr := jwt_util.GetIssuer(cookie)
+	issuer, issuerErr := jwt_util.GetIssuer(cookie)
 
-// 	if issuerErr != nil {
-// 		restErr := errors.NewBadRequestError("Couldn't get user information")
-// 		c.JSON(http.StatusBadRequest, restErr)
-// 		return
-// 	}
+	if issuerErr != nil {
+		restErr := errors.NewBadRequestError("Couldn't get user information")
+		c.JSON(http.StatusBadRequest, restErr)
+		return
+	}
 
-// 	if err := c.ShouldBindJSON(&token); err != nil {
-// 		tokenErr := errors.NewBadRequestError(err.Error())
-// 		c.JSON(tokenErr.Status, tokenErr)
-// 	}
+	issuerInt, _ := strconv.ParseInt(issuer, 10, 64)
 
-// 	// get user service and get the user by using it
-// 	getErr := otphandler.os.GetUserByID(user)
+	if err := c.ShouldBindJSON(&token); err != nil {
+		tokenErr := errors.NewBadRequestError(err.Error())
+		c.JSON(tokenErr.Status, tokenErr)
+		return
+	}
 
-// 	if getErr != nil {
-// 		restErr := errors.NewBadRequestError("Couldn't get user information")
-// 		c.JSON(http.StatusBadRequest, restErr)
-// 	}
+	otp.User_id = issuerInt
 
-// 	isValid := totp.Validate(token.Token, user.Email)
+	getErr := otphandler.os.GetOTPSecret(&otp)
 
-// 	if !isValid {
-// 		restErr := errors.NewBadRequestError("Token isn't valid")
+	if getErr != nil {
+		restErr := errors.NewBadRequestError("Couldn't get user information")
+		c.JSON(http.StatusBadRequest, restErr)
+		return
+	}
 
-// 		c.JSON(http.StatusBadRequest, restErr)
-// 		return
-// 	}
+	isValid := totp.Validate(token.Token, otp.Otp_secret)
 
-// 	// dataToUpdate := domain.User{
-// 	// 	Otp_enabled:  true,
-// 	// 	Otp_verified: true,
-// 	// }
+	if !isValid {
+		restErr := errors.NewBadRequestError("Token isn't valid")
+		c.JSON(http.StatusBadRequest, restErr)
+		return
+	}
+	user.ID = issuerInt
 
-// 	userResponse := gin.H{
-// 		"id":          user.ID,
-// 		"name":        user.FirstName,
-// 		"email":       user.Email,
-// 		"otp_enabled": token.Otp_enabled,
-// 	}
+	getErr = otphandler.us.GetUserByID(user)
 
-// 	c.JSON(http.StatusOK, gin.H{"otp_verified": true, "user": userResponse})
+	if getErr != nil {
+		restErr := errors.NewBadRequestError("Couldn't get user information")
+		c.JSON(http.StatusBadRequest, restErr)
+		return
+	}
 
-// }
+	updateErr := otphandler.os.EnableUserOTP(&domain.OTP{Otp_enabled: true, Otp_verified: true, User_id: otp.User_id})
+
+	if updateErr != nil {
+		restErr := errors.NewBadRequestError("Updating the one time password resulted in an error !")
+		c.JSON(http.StatusBadRequest, restErr)
+		return
+	}
+
+	userResponse := gin.H{
+		"id":           otp.User_id,
+		"name":         user.FirstName,
+		"email":        user.Email,
+		"otp_enabled":  true,
+		"otp_verified": true,
+	}
+
+	c.JSON(http.StatusOK, gin.H{"otp_verified": true, "user": userResponse})
+}
