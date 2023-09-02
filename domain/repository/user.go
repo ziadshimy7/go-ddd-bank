@@ -20,9 +20,9 @@ type UserRepo struct {
 }
 
 var (
-	queryInsertUser     = "INSERT INTO users(first_name,last_name,email,password) VALUES (?,?,?,?);"
-	queryGetUserByEmail = "SELECT id, first_name, last_name, password FROM users WHERE email = ? "
-	queryGetUserByID    = "SELECT id, first_name, last_name, email FROM users WHERE id = ? "
+	queryInsertUser     = "INSERT INTO users(first_name,last_name,email,password,phone) VALUES (?,?,?,?,?);"
+	queryGetUserByEmail = "SELECT id, first_name, last_name, password, phone FROM users WHERE email = ? "
+	queryGetUserByID    = "SELECT id, first_name, last_name, email, phone FROM users WHERE id = ? "
 )
 
 func NewUserRepository(db *db.DbConnection) *UserRepo {
@@ -37,19 +37,16 @@ func (r *UserRepo) Save(user *domain.User) *errors.Errors {
 	}
 	defer stmt.Close()
 
-	insertResult, saveError := stmt.Exec(user.FirstName, user.LastName, user.Email, user.Password)
+	_, saveError := stmt.Exec(user.FirstName, user.LastName, user.Email, user.Password, user.Phone)
 
 	if saveError != nil {
 		fmt.Println(saveError.Error())
 		return errors.NewInternalServerError(saveError.Error())
 	}
-	userID, err := insertResult.LastInsertId()
 
 	if err != nil {
 		return errors.NewInternalServerError("database error")
 	}
-
-	user.ID = userID
 
 	return nil
 }
@@ -64,7 +61,7 @@ func (r *UserRepo) GetByEmail(user *domain.User) *errors.Errors {
 
 	result := stmt.QueryRow(user.Email)
 
-	err = result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Password)
+	err = result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Password, &user.Phone)
 	if err != nil {
 		return errors.NewInternalServerError("Failed to login user")
 	}
@@ -83,7 +80,7 @@ func (r *UserRepo) GetByID(user *domain.User) *errors.Errors {
 
 	result := stmt.QueryRow(user.ID)
 
-	getErr := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email)
+	getErr := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Phone)
 
 	if getErr != nil {
 		return errors.NewInternalServerError("Couldn't retrieve user")

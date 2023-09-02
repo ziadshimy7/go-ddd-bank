@@ -7,6 +7,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserServiceHandlers interface {
+	CreateUser(user *domain.User) (*domain.User, *errors.Errors)
+	GetUserByEmail(user *domain.User) (*domain.User, *errors.Errors)
+	GetUserByID(user *domain.User) *errors.Errors
+}
+
 type UserService struct {
 	r repo.UserRepository
 }
@@ -20,7 +26,7 @@ func (us *UserService) CreateUser(user *domain.User) (*domain.User, *errors.Erro
 		return nil, err
 	}
 
-	pwSlice, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
+	pwSlice, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 	if err != nil {
 		return nil, errors.NewBadRequestError("Failed to encrypt the pw")
 	}
@@ -42,13 +48,19 @@ func (us *UserService) GetUserByEmail(user *domain.User) (*domain.User, *errors.
 		return nil, err
 	}
 
-	result.VerifyPassword(user.Password)
+	verifyErr := result.VerifyPassword(user.Password)
+
+	if verifyErr {
+		return &domain.User{}, errors.NewBadRequestError("Couldn't verify user Password")
+	}
 
 	resultWp := &domain.User{
 		ID:        result.ID,
 		FirstName: result.FirstName,
 		LastName:  result.LastName,
-		Email:     result.Email}
+		Email:     result.Email,
+		Phone:     result.Phone,
+	}
 
 	return resultWp, nil
 }

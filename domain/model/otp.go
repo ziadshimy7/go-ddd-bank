@@ -3,18 +3,18 @@ package domain
 import "time"
 
 type OTP struct {
-	ID           int64      `json:"otp_id"`
-	Otp_enabled  bool       `json:"otp_enabled"`
-	Otp_verified bool       `json:"otp_verified"`
-	Otp_secret   string     `json:"otp_secret,omitempty"`
-	Otp_auth_url string     `json:"otp_auth_url,omitempty"`
-	User_id      int64      `json:"user_id"`
-	CreatedAt    *time.Time `json:"created_at,omitempty"`
-	UpdatedAt    *time.Time `json:"updated_at,omitempty"`
+	ID           int64      `json:"otpId"`
+	Otp_enabled  bool       `json:"otpEnabled"`
+	Otp_verified bool       `json:"otpVerified"`
+	Otp_secret   string     `json:"otpSecret,omitempty"`
+	Otp_auth_url string     `json:"otpAuthUrl,omitempty"`
+	User_id      int64      `json:"userId"`
+	CreatedAt    *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt    *time.Time `json:"updatedAt,omitempty"`
 }
 
 type OTPInput struct {
-	UserId string `json:"user_id"`
+	UserId string `json:"userId"`
 	Token  string `json:"token"`
 }
 

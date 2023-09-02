@@ -9,13 +9,14 @@ import (
 )
 
 type User struct {
-	ID        int64      `json:"ID,,omitempty"`
-	FirstName string     `json:"first_name"`
-	LastName  string     `json:"last_name"`
+	ID        int64      `json:"id,omitempty"`
+	FirstName string     `json:"firstName"`
+	LastName  string     `json:"lastName"`
 	Password  string     `json:"password,omitempty"`
 	Email     string     `json:"email"`
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	Phone     string     `json:"phone"`
+	CreatedAt *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 func NewUser(args *User) *User {
@@ -27,6 +28,7 @@ func NewUser(args *User) *User {
 		Email:     args.Email,
 		CreatedAt: args.CreatedAt,
 		UpdatedAt: args.UpdatedAt,
+		Phone:     args.Phone,
 	}
 }
 
@@ -34,13 +36,19 @@ func (user *User) Validate() *errors.Errors {
 	user.FirstName = strings.TrimSpace(user.FirstName)
 	user.LastName = strings.TrimSpace(user.LastName)
 	user.Email = strings.TrimSpace(user.Email)
+	user.Phone = strings.TrimSpace(user.Phone)
+	user.Password = strings.TrimSpace(user.Password)
+
 	if user.Email == "" {
 		errors.NewBadRequestError("Email cannot be empty")
 	}
-	user.Password = strings.TrimSpace(user.Password)
 
 	if user.Password == "" {
-		errors.NewBadRequestError("Invalid password")
+		errors.NewBadRequestError("Password Cannot be empty")
+	}
+
+	if user.Phone == "" {
+		errors.NewBadRequestError("Phone cannot be empty")
 	}
 
 	return nil
