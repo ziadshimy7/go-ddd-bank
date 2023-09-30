@@ -58,3 +58,11 @@ func (u *User) VerifyPassword(userPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(userPassword))
 	return err != nil
 }
+
+func (u *User) HashPassword() (string, *errors.Errors) {
+	pwSlice, err := bcrypt.GenerateFromPassword([]byte(u.Password), 12)
+	if err != nil {
+		return "", errors.NewBadRequestError("Failed to encrypt the pw")
+	}
+	return string(pwSlice), nil
+}

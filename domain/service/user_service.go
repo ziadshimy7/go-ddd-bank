@@ -1,10 +1,10 @@
 package services
 
 import (
+	"github.com/go-ddd-bank/domain/dto"
 	"github.com/go-ddd-bank/domain/model"
 	repo "github.com/go-ddd-bank/domain/repository"
 	errors "github.com/go-ddd-bank/utils"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServiceHandlers interface {
@@ -21,25 +21,27 @@ func NewUserService(r repo.UserRepository) *UserService {
 	return &UserService{r: r}
 }
 
-func (us *UserService) CreateUser(user *domain.User) (*domain.User, *errors.Errors) {
+func (us *UserService) CreateUser(user *domain.User) (*dto.UserDTO, *errors.Errors) {
 	if err := user.Validate(); err != nil {
 		return nil, err
 	}
 
-	pwSlice, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	hashedPW, err := user.HashPassword()
+
 	if err != nil {
-		return nil, errors.NewBadRequestError("Failed to encrypt the pw")
+		return nil, err
 	}
-	user.Password = string(pwSlice)
+
+	user.Password = hashedPW
 
 	if err := us.r.Save(user); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return toUser(user), nil
 }
 
-func (us *UserService) GetUserByEmail(user *domain.User) (*domain.User, *errors.Errors) {
+func (us *UserService) GetUserByEmail(user *domain.User) (*dto.UserDTO, *errors.Errors) {
 	result := &domain.User{Email: user.Email}
 
 	err := us.r.GetByEmail(result)
@@ -51,24 +53,20 @@ func (us *UserService) GetUserByEmail(user *domain.User) (*domain.User, *errors.
 	verifyErr := result.VerifyPassword(user.Password)
 
 	if verifyErr {
-		return &domain.User{}, errors.NewBadRequestError("Couldn't verify user Password")
+		return nil, errors.NewBadRequestError("Couldn't verify user Password")
 	}
 
-	resultWp := &domain.User{
-		ID:        result.ID,
-		FirstName: result.FirstName,
-		LastName:  result.LastName,
-		Email:     result.Email,
-		Phone:     result.Phone,
-	}
-
-	return resultWp, nil
+	return toUser(result), nil
 }
 
-func (us *UserService) GetUserByID(user *domain.User) *errors.Errors {
+func (us *UserService) GetUserByID(user *domain.User) (*dto.UserDTO, *errors.Errors) {
 	if err := us.r.GetByID(user); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return toUser(user), nil
+}
+
+func toUser(u *domain.User) *dto.UserDTO {
+	return &dto.UserDTO{ID: u.ID, FirstName: u.FirstName, LastName: u.LastName, Email: u.Email, Phone: u.Phone}
 }

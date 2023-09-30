@@ -3,7 +3,7 @@ package jwt_util
 import (
 	"strconv"
 
-	domain "github.com/go-ddd-bank/domain/model"
+	"github.com/go-ddd-bank/domain/dto"
 	errors "github.com/go-ddd-bank/utils"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -32,7 +32,7 @@ func GetIssuer(cookie string) (issuer string, rest_error error) {
 	return issuer, nil
 }
 
-func CreateJWT(result *domain.User, expireTime *jwt.NumericDate) (string, *errors.Errors) {
+func CreateJWT(result *dto.UserDTO, expireTime *jwt.NumericDate) (string, *errors.Errors) {
 
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{Issuer: strconv.Itoa(int(result.ID)), ExpiresAt: expireTime})
 	token, tokenErr := claims.SignedString([]byte(SecretKey))

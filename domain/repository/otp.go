@@ -23,16 +23,18 @@ var (
 	queryUpdateOTP = `UPDATE otp
 	SET
 	otp_secret = ?,
-	otp_auth_url = ?
+	otp_auth_url = ?,
+	passcode = ?
 	WHERE 
 	user_id = ?;`
-	queryGetOTPSecret = `SELECT otp_secret 
+
+	queryGetOTPSecret = `SELECT passcode 
 	FROM otp WHERE user_id = ?;`
 
 	queryEnableUserOTP = `UPDATE otp
 	SET
-	otp_verified = ?,
-	otp_enabled = ?
+	otp_verified = true,
+	otp_enabled = true
 	WHERE
 	user_id = ?;`
 )
@@ -51,7 +53,7 @@ func (r *OTPRepo) UpdateOTP(otp *domain.OTP) *errors.Errors {
 
 	defer stmt.Close()
 
-	_, updateErr := stmt.Exec(otp.Otp_secret, otp.Otp_auth_url, otp.User_id)
+	_, updateErr := stmt.Exec(otp.Otp_secret, otp.Otp_auth_url, otp.Passcode, otp.User_id)
 
 	if updateErr != nil {
 		fmt.Println(updateErr.Error())
@@ -74,10 +76,9 @@ func (r *OTPRepo) GetOTPSecret(otp *domain.OTP) *errors.Errors {
 
 	result := stmt.QueryRow(otp.User_id)
 
-	err = result.Scan(&otp.Otp_secret)
+	err = result.Scan(&otp.Passcode)
 
 	if err != nil {
-		fmt.Println(err)
 		return errors.NewInternalServerError("Cannot fetch account details")
 	}
 
@@ -88,13 +89,12 @@ func (r *OTPRepo) EnableUserOTP(otp *domain.OTP) *errors.Errors {
 	stmt, err := r.Db.Prepare(queryEnableUserOTP)
 
 	if err != nil {
-		fmt.Println(err)
 		return errors.NewInternalServerError("User not found")
 	}
 
 	defer stmt.Close()
 
-	_, updateErr := stmt.Exec(otp.Otp_verified, otp.Otp_enabled, otp.User_id)
+	_, updateErr := stmt.Exec(otp.User_id)
 
 	if updateErr != nil {
 		fmt.Println(updateErr.Error())

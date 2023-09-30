@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	// "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	repo "github.com/go-ddd-bank/domain/repository"
 	services "github.com/go-ddd-bank/domain/service"
@@ -10,7 +9,6 @@ import (
 	"github.com/go-ddd-bank/infrastructure/db"
 	infrastructure "github.com/go-ddd-bank/infrastructure/http/routes"
 	"net/http"
-	_ "net/http/pprof"
 )
 
 var (
