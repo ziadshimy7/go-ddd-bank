@@ -3,17 +3,14 @@ package sendemail
 import (
 	"fmt"
 	"net/smtp"
+	"os"
 
 	errors "github.com/go-ddd-bank/utils"
 )
 
-func SendEmail(msg string) *errors.Errors {
-	from := "ziadshimy77@mail.ru"
-	password := "hggTLp4zZ0Xg9nqadXHv"
-
-	to := []string{
-		"ziadshimy7@gmail.com",
-	}
+func SendEmail(msg string, sentTo []string) *errors.Errors {
+	from := os.Getenv("MAIL_RU_USERNAME")
+	password := os.Getenv("MAIL_RU_PASSWORD")
 
 	smtpHost := "smtp.mail.ru"
 	smtpPort := "587"
@@ -22,7 +19,7 @@ func SendEmail(msg string) *errors.Errors {
 
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, sentTo, message)
 
 	if err != nil {
 		return errors.NewInternalServerError(err.Error())

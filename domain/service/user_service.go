@@ -8,9 +8,9 @@ import (
 )
 
 type UserServiceHandlers interface {
-	CreateUser(user *domain.User) (*domain.User, *errors.Errors)
-	GetUserByEmail(user *domain.User) (*domain.User, *errors.Errors)
-	GetUserByID(user *domain.User) *errors.Errors
+	CreateUser(user *domain.User) (*dto.UserDTO, *errors.Errors)
+	GetUserByEmail(user *domain.User) (*dto.UserDTO, *errors.Errors)
+	GetUserByID(user *domain.User) (*dto.UserDTO, *errors.Errors)
 }
 
 type UserService struct {

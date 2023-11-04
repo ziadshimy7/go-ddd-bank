@@ -11,7 +11,6 @@ import (
 	services "github.com/go-ddd-bank/domain/service"
 	errors "github.com/go-ddd-bank/utils"
 	jwt_util "github.com/go-ddd-bank/utils/jwt"
-
 	sendemail "github.com/go-ddd-bank/utils/send-email"
 	"github.com/pquerna/otp/totp"
 )
@@ -69,7 +68,7 @@ func (otphandler *OTPHandler) GetOTP(c *gin.Context) {
 	}
 
 	message := fmt.Sprintf("Dear user, your one-time passcode for authentication is: %s. Please use this code to complete your sign in process.", passcode)
-	mailErr := sendemail.SendEmail(message)
+	mailErr := sendemail.SendEmail(message, []string{user.Email})
 
 	if mailErr != nil {
 		c.JSON(http.StatusInternalServerError, mailErr.Error)

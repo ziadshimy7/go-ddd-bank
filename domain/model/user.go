@@ -40,15 +40,23 @@ func (user *User) Validate() *errors.Errors {
 	user.Password = strings.TrimSpace(user.Password)
 
 	if user.Email == "" {
-		errors.NewBadRequestError("Email cannot be empty")
+		return errors.NewBadRequestError("Email cannot be empty")
 	}
 
 	if user.Password == "" {
-		errors.NewBadRequestError("Password Cannot be empty")
+		return errors.NewBadRequestError("Password cannot be empty")
 	}
 
 	if user.Phone == "" {
-		errors.NewBadRequestError("Phone cannot be empty")
+		return errors.NewBadRequestError("Phone cannot be empty")
+	}
+
+	if user.FirstName == "" {
+		return errors.NewBadRequestError("First name cannot be empty")
+	}
+
+	if user.LastName == "" {
+		return errors.NewBadRequestError("Last name cannot be empty")
 	}
 
 	return nil
