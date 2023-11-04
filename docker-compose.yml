@@ -42,7 +42,7 @@ services:
   migrate:
     image: migrate/migrate
     volumes:
-      - /home/zelshimy/Desktop/fun/DDD-bank/pkg/migrations:/migrations
+      - /pkg/migrations:/migrations
     command:
       [
         "-path",
