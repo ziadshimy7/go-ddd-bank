@@ -63,7 +63,7 @@ func (r *UserRepo) GetByEmail(user *domain.User) *errors.Errors {
 
 	err = result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Password, &user.Phone)
 	if err != nil {
-		return errors.NewInternalServerError("Failed to login user")
+		return errors.NewBadRequestError("Failed to login user")
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func (r *UserRepo) GetByID(user *domain.User) *errors.Errors {
 	stmt, err := r.Db.Prepare(queryGetUserByID)
 
 	if err != nil {
-		return errors.NewInternalServerError("User not found")
+		return errors.NewBadRequestError("User not found")
 	}
 
 	defer stmt.Close()

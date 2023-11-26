@@ -10,7 +10,8 @@ import (
 )
 
 const queryGetUserAccountByID = `
-SELECT accounts_id, user_id, account_number, expenses, income, balance,
+SELECT accounts_id, user_id, account_number, expenses, income, 
+	   balance, expiration_date,
        first_name, last_name, email, phone FROM accounts 
        INNER JOIN users ON users.id = accounts.user_id WHERE accounts.user_id = ?;
 `
@@ -43,7 +44,7 @@ func (r *UserAccountDtoRepository) GetAccountViewByUserID(userID int64) (*dto.Us
 
 	err = result.Scan(&dto.Account.ID, &dto.Account.UserID,
 		&dto.Account.AccountsNumber, &dto.Account.Expenses, &dto.Account.Income,
-		&dto.Account.Balance, &dto.User.FirstName,
+		&dto.Account.Balance, &dto.Account.ExpirationDate, &dto.User.FirstName,
 		&dto.User.LastName, &dto.User.Email, &dto.User.Phone)
 
 	if err != nil {

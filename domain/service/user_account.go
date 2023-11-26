@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/go-ddd-bank/domain/dto"
+	domain "github.com/go-ddd-bank/domain/model"
 	repo "github.com/go-ddd-bank/domain/repository"
 	errors "github.com/go-ddd-bank/utils"
 )
@@ -20,5 +21,18 @@ func (uas *UserAccountService) GetUserAccountDetails(userID int64) (*dto.UserAcc
 		return nil, err
 	}
 
-	return userAccountDto, nil
+	return toAccountUserWithoutCreationDate(userAccountDto), nil
+}
+
+func toAccountUserWithoutCreationDate(userAcc *dto.UserAccountDto) *dto.UserAccountDto {
+	return &dto.UserAccountDto{User: userAcc.User,
+		Account: &domain.Account{
+			ID:             userAcc.Account.ID,
+			UserID:         userAcc.Account.UserID,
+			AccountsNumber: userAcc.Account.AccountsNumber, Expenses: userAcc.Account.Expenses,
+			Income:         userAcc.Account.Income,
+			Balance:        userAcc.Account.Balance,
+			CardNumber:     userAcc.Account.CardNumber,
+			ExpirationDate: userAcc.Account.ExpirationDate,
+		}}
 }

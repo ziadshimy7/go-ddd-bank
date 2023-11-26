@@ -1,0 +1,145 @@
+basePath: /
+definitions:
+  dto.UserDTO:
+    properties:
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: integer
+      lastName:
+        type: string
+      phone:
+        type: string
+    type: object
+  errors.Errors:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample bank server
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Go + Gin Domain Driven Design Bank
+  version: "1.0"
+paths:
+  /api/auth/login:
+    post:
+      operationId: login
+      parameters:
+      - description: user's email
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: user's password
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              description: jwt=token; Expires=expires; HttpOnly" true
+              type: string
+          schema:
+            $ref: '#/definitions/dto.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.Errors'
+      summary: Log in the user if the username and password are found in the db
+      tags:
+      - 'Auth: Login User'
+  /api/auth/register:
+    post:
+      operationId: register-user
+      parameters:
+      - description: first name of the user
+        in: query
+        name: firstName
+        required: true
+        type: string
+      - description: last name of the user
+        in: query
+        name: lastName
+        required: true
+        type: string
+      - description: phone number of the user (must start with a + and country code
+          eg. +7)
+        in: query
+        name: phone
+        required: true
+        type: string
+      - description: user's email (must be a valid email)
+        in: query
+        name: email
+        required: true
+        type: string
+      - description: user's password (must be a strong password, containing an uppercase,
+          lowercase and symbol)
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.Errors'
+      summary: Registers a user and returns the user info with password
+      tags:
+      - 'Auth: Register User'
+  /api/auth/user:
+    get:
+      operationId: get-user
+      parameters:
+      - default: token=xxx
+        description: jwt
+        in: header
+        name: Cookie
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserDTO'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.Errors'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a single user by jwt token (if passed in headers)
+      tags:
+      - 'Auth: Get User'
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

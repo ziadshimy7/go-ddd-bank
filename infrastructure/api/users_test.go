@@ -114,4 +114,28 @@ func TestLogin(t *testing.T) {
 		assert.Equal(t, http.StatusOK, response.Code)
 		mockUserService.AssertExpectations(t)
 	})
+
+	t.Run("It should fail with status 404 if user isn't found", func(t *testing.T) {
+		mockUserEmail := domain.NewUser(&domain.User{Email: "Ziadshimy23@gmail.com"})
+
+		mockUser := &dto.UserDTO{
+			ID:        1,
+			FirstName: "Ziad",
+			LastName:  "Elshimy",
+			Email:     "Ziadshimy7@gmail.com",
+			Phone:     "+79122390087",
+		}
+
+		mockUserService.On("GetUserByEmail", mockUserEmail).Return(mockUser)
+
+		body, _ := json.Marshal(mockUserEmail)
+		request, _ := http.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewBuffer(body))
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+
+		assert.Equal(t, http.StatusNotFound, response.Code)
+		mockUserService.AssertExpectations(t)
+
+	})
+
 }

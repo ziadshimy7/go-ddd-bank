@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-ddd-bank/docs"
 	repo "github.com/go-ddd-bank/domain/repository"
 	services "github.com/go-ddd-bank/domain/service"
 	"github.com/go-ddd-bank/infrastructure/api"
@@ -13,10 +14,27 @@ import (
 	"github.com/go-ddd-bank/infrastructure/http/middleware"
 	infrastructure "github.com/go-ddd-bank/infrastructure/http/routes"
 	"github.com/joho/godotenv"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-var ()
+// @title Go + Gin Domain Driven Design Bank
+// @version 1.0
+// @description This is a sample bank server
 
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /
+// @query.collection.format multi
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -24,10 +42,10 @@ func main() {
 	}
 
 	dataDriver := os.Getenv("DATABASE_DRIVER")
-	databaseHost := os.Getenv("DATABASE_HOST")
-	if databaseHost == "" {
-		databaseHost = "127.0.0.1:3306"
-	}
+	// databaseHost := os.Getenv("DATABASE_HOST")
+	// if databaseHost == "" {
+	databaseHost := "127.0.0.1:3306"
+	// }
 
 	databaseUsername := os.Getenv("DATABASE_USERNAME")
 	databasePassword := os.Getenv("DATABASE_PASSWORD")
@@ -74,6 +92,9 @@ func main() {
 	accountRoutes.RegisterRoutes(r)
 	userAccountRoutes.RegisterRoutes(r)
 	otpRoutes.RegisterRoutes(r)
+
+	//run swagger
+	r.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Run(":8080")
 
